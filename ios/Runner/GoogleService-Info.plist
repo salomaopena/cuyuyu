@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>338616240173-fn13o2f77sfoqiie48qqfqstpdb24htq.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.338616240173-fn13o2f77sfoqiie48qqfqstpdb24htq</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>338616240173-3angf2kjo58n3ec80ovheh21qppo5utn.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCcU8Bgx98-bHyPToTYYqNKwa1kdoDDMcs</string>
+	<key>GCM_SENDER_ID</key>
+	<string>338616240173</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.fenixinnovation.cuyuyu</string>
+	<key>PROJECT_ID</key>
+	<string>cuyuyu</string>
+	<key>STORAGE_BUCKET</key>
+	<string>cuyuyu.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:338616240173:ios:2a9acd5b0903fde31cd0a4</string>
+	<key>DATABASE_URL</key>
+	<string>https://cuyuyu.firebaseio.com</string>
+</dict>
+</plist>

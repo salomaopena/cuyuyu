@@ -1,0 +1,99 @@
+{
+  "project_info": {
+    "project_number": "338616240173",
+    "firebase_url": "https://cuyuyu.firebaseio.com",
+    "project_id": "cuyuyu",
+    "storage_bucket": "cuyuyu.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:338616240173:android:7d1407ca6b139f061cd0a4",
+        "android_client_info": {
+          "package_name": "com.fenix.kuyuyuadmin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "338616240173-p5627r2p02fegq4dcdft525efvo3oou9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fenix.kuyuyuadmin",
+            "certificate_hash": "6f498065ee27eec9cc765289be5cbc59dfab029c"
+          }
+        },
+        {
+          "client_id": "338616240173-3dlaqflengvp4qv916d4ulg34hi05b4q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzanIqdHXHavRXyVlCzr9G9dLCeiv7nkI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "338616240173-3dlaqflengvp4qv916d4ulg34hi05b4q.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "338616240173-i0mvqakmbtkp6uajcevgbcue4dggq1hi.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.fenixinnovation.cuyuyuClientApp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:338616240173:android:afa0a24f1eabe3011cd0a4",
+        "android_client_info": {
+          "package_name": "com.fenixinnovation.cuyuyu"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "338616240173-3angf2kjo58n3ec80ovheh21qppo5utn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fenixinnovation.cuyuyu",
+            "certificate_hash": "a111b65b48aea12b381d8ea287703b1f40993e53"
+          }
+        },
+        {
+          "client_id": "338616240173-3dlaqflengvp4qv916d4ulg34hi05b4q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzanIqdHXHavRXyVlCzr9G9dLCeiv7nkI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "338616240173-3dlaqflengvp4qv916d4ulg34hi05b4q.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "338616240173-i0mvqakmbtkp6uajcevgbcue4dggq1hi.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.fenixinnovation.cuyuyuClientApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
