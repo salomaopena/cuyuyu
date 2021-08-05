@@ -1,6 +1,7 @@
 import 'dart:io';
+import 'package:cuyuyu/src/components/bottom_nav_bar.dart';
 import 'package:cuyuyu/src/utils/app_theme.dart';
-import 'package:cuyuyu/src/utils/shop_app_theme.dart';
+import 'package:cuyuyu/src/utils/enums.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -42,19 +43,21 @@ class _NotificationPageState extends State<NotificationPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: ShopAppTheme.buildLightTheme().backgroundColor,
-      child: SafeArea(
-        top: false,
-        bottom: true,
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Notificações", style: AppTheme.title),
+        elevation: 0,
+        iconTheme: IconThemeData.fallback(),
+        backgroundColor: Colors.transparent,
+        foregroundColor: AppTheme.nearlyBlack,
+      ),
+      backgroundColor: AppTheme.nearlyWhite,
           body: Column(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              getAppBarUI(),
               Flexible(
+                fit: FlexFit.tight,
                 child: ListView(
                   padding: EdgeInsets.only(top: 24.0, left: 8.0, right: 8.0),
                   children: <Widget>[
@@ -90,78 +93,15 @@ class _NotificationPageState extends State<NotificationPage> {
                       title: Text('Outras'),
                       trailing: platformSwitch(feedbackReviews),
                     ),
+                    Divider(
+                      endIndent: 80,
+                    ),
                   ],
                 ),
               ),
             ],
           ),
-
-          /*(
-            child: Padding(
-              padding: EdgeInsets.only(top: 24.0, left: 24.0, right: 24.0),
-
-            ),
-          ),*/
-        ),
-      ),
-    );
-  }
-
-  Widget getAppBarUI() {
-    return Container(
-      decoration: BoxDecoration(
-        color: ShopAppTheme.buildLightTheme().backgroundColor,
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-              color: Colors.grey.withOpacity(0.0),
-              offset: const Offset(0, 0),
-              blurRadius: 0.0),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top, left: 8, right: 8),
-        child: Row(
-          children: <Widget>[
-            Container(
-              alignment: Alignment.centerLeft,
-              width: AppBar().preferredSize.height + 40,
-              height: AppBar().preferredSize.height,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(32.0),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Icon(Icons.arrow_back_ios),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: Text(
-                  'Definições',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16.0,
-                    fontFamily: 'Raleway',
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              width: AppBar().preferredSize.height + 40,
-              height: AppBar().preferredSize.height,
-            )
-          ],
-        ),
-      ),
+      bottomNavigationBar: CustomBottomNavBar(selectedMenu: MenuState.profile),
     );
   }
 }

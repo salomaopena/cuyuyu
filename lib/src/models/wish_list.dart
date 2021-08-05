@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cuyuyu/src/utils/databases/database_app.dart';
 import 'package:flutter/foundation.dart';

@@ -1,57 +1,70 @@
-import 'package:cuyuyu/src/models/shop_category.dart';
+//@dart=2.9
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cuyuyu/src/pages/shop_by_category.dart';
+import 'package:cuyuyu/src/utils/app_theme.dart';
+import 'package:cuyuyu/src/utils/size_config.dart';
 import 'package:flutter/material.dart';
-
-
+import 'package:get/get.dart';
 
 class CategoryCardShop extends StatelessWidget {
-  final ShopCategoryModel category;
+  final QueryDocumentSnapshot category;
 
   const CategoryCardShop({Key key, this.category}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => ShopByCategory(
-                category: category,
-              ))),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 0.0),
-        child: Card(
+    return Padding(
+      padding: EdgeInsets.only(
+          left: getProportionateScreenWidth(10),
+          right: getProportionateScreenWidth(10)),
+      child: GestureDetector(
+        onTap: () =>  Get.to(()=>ShopByCategory(category: category)),
+        child: SizedBox(
+          width: getProportionateScreenWidth(242),
+          height: getProportionateScreenHeight(100),
           child: ClipRRect(
-            borderRadius: BorderRadius.all(Radius.circular(5)),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
+            borderRadius: BorderRadius.circular(20),
+            child: Stack(
+              children: [
+                Image.network(
+                  category.data()['image'],
+                  fit: BoxFit.cover,
+                  filterQuality: FilterQuality.high,
+                  repeat: ImageRepeat.noRepeat,
+                  width:  double.infinity,
+                  height: double.infinity,
+                ),
                 Container(
-                  height: 80,
-                  width: 90,
-                  padding: EdgeInsets.all(8.0),
-                  child: Center(
-                    child: Text(
-                      category.category,
-                      textAlign: TextAlign.right,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyText2
-                          .copyWith(fontFamily: 'Raleway'),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        AppTheme.nearlyBlack.withOpacity(0.9),
+                        AppTheme.nearlyBlack.withOpacity(0.15),
+                      ],
                     ),
                   ),
                 ),
-                Container(
-                  height: 80,
-                  width: 90,
-                  decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                          colors: [category.begin, category.end],
-                          center: Alignment(0, 0),
-                          radius: 0.8,
-                          focal: Alignment(0, 0),
-                          focalRadius: 0.1)),
-                  padding: EdgeInsets.all(8.0),
-                  child: Center(
-                    child: category.image,
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: getProportionateScreenWidth(15.0),
+                    vertical: getProportionateScreenWidth(10),
+                  ),
+                  child: Text.rich(
+                    TextSpan(
+                      style: TextStyle(color: Colors.white),
+                      children: [
+                        TextSpan(
+                          text: category.data()['category']+"\n",
+                          style: TextStyle(
+                            fontSize: getProportionateScreenWidth(18),
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        TextSpan(text: "Tudo que voce deseja")
+                      ],
+                    ),
                   ),
                 ),
               ],

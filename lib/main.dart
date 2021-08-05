@@ -1,18 +1,19 @@
+// @dart=2.9
 import 'dart:io';
-import 'package:cuyuyu/src/my_teste.dart';
-import 'package:cuyuyu/src/pages/splash_screen.dart';
+import 'package:cuyuyu/src/pages/splash/splash_screen.dart';
 import 'package:cuyuyu/src/utils/app_theme.dart';
-import 'package:cuyuyu/src/utils/colors.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
     DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown
+    DeviceOrientation.portraitDown,
   ]).then((_) => runApp(MyApp()));
 }
 
@@ -20,25 +21,30 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
+      statusBarColor: AppTheme.nearlyWhite,
       statusBarIconBrightness: Brightness.dark,
       statusBarBrightness:
           Platform.isAndroid ? Brightness.dark : Brightness.light,
-      systemNavigationBarColor: Colors.white,
+      systemNavigationBarColor: AppTheme.nearlyWhite,
       systemNavigationBarDividerColor: Colors.grey,
       systemNavigationBarIconBrightness: Brightness.dark,
     ));
 
-    return MaterialApp(
+    return GetMaterialApp(
+      enableLog: true,
+      defaultTransition: Transition.fade,
+      opaqueRoute: Get.isOpaqueRouteDefault,
+      popGesture: Get.isPopGestureEnable,
+      transitionDuration: Get.defaultDialogTransitionDuration,
       title: 'Cuyuyu Entregas',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        accentColor: cuyuyuOrange,
+        accentColor: AppTheme.cuyuyuOrange,
         textTheme: AppTheme.textTheme,
         platform: TargetPlatform.iOS,
       ),
-     home: MySplashScreen(),
+      home: SplashScreen(),
     );
   }
 }

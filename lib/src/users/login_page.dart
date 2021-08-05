@@ -1,13 +1,36 @@
-import 'package:cuyuyu/src/custom_drawer/navigation_home_screen.dart';
+//@dart=2.9
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cuyuyu/src/pages/home/home_screen.dart';
+import 'package:cuyuyu/src/users/change_password.dart';
 import 'package:cuyuyu/src/users/register_page.dart';
 import 'package:cuyuyu/src/utils/app_theme.dart';
+import 'package:cuyuyu/src/utils/config.dart';
+import 'package:cuyuyu/src/utils/constants.dart';
+import 'package:cuyuyu/src/utils/default_button.dart';
 import 'package:cuyuyu/src/utils/image_placeholder.dart';
-import 'package:cuyuyu/src/utils/shop_app_theme.dart';
+import 'package:cuyuyu/src/utils/no_account.dart';
+import 'package:cuyuyu/src/utils/progress_dialog.dart';
+import 'package:cuyuyu/src/utils/size_config.dart';
+import 'package:cuyuyu/src/utils/socal_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_signin_button/button_list.dart';
-import 'package:flutter_signin_button/button_view.dart';
+import 'package:flutter/rendering.dart';
+import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:toast/toast.dart';
+
+const USER_NAME = "userName";
+const USER_CARD = "cardId";
+const PHONE_NUMBER = "phoneNumber";
+const USER_MAIL = "userMail";
+const GENDER = "gender";
+const ADDRESS = "address";
+const PHOTO_URL = "photoUrl";
+const IS_ONLINE = "isOnline";
+const USER_TYPE = "userType";
+const TIMESTAMP = "created";
 
 class LoginPage extends StatefulWidget {
   @override
@@ -16,341 +39,203 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   bool _obscuredText = true;
-  bool isLoading = false;
-  String email;
-  String password;
+  String email = "";
+  String password = "";
+  ProgressDialog pr;
 
-  AnimationController animationController;
-
-  final _formKey = GlobalKey<FormState>();
+  final _formKey = new GlobalKey<FormState>();
 
   final _firebaseAuth = FirebaseAuth.instance;
+  final _googleSignIn = GoogleSignIn();
+  final userReference = FirebaseFirestore.instance.collection(USER_URL);
 
-  Future<void> logInToFb(
-    @required String email,
-    @required String password,
-  ) async {
-    _firebaseAuth
-        .signInWithEmailAndPassword(email: email, password: password)
-        .then((result) {
-      isLoading = false;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => NavigationHomeScreen()),
-      );
-    }).catchError((err) {
-      print(err.message);
-      showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text(
-                "Informação",
-                style: AppTheme.textTheme.headline5,
-              ),
-              content: Text(err.message),
-              actions: [
-                FlatButton(
-                  child: Text("Ok"),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                )
-              ],
-            );
-          });
-    });
-  }
 
   @override
   initState() {
     Firebase.initializeApp();
-    animationController = AnimationController(
-        duration: const Duration(milliseconds: 1000), vsync: this);
     super.initState();
-  }
-
-  Future<bool> getData() async {
-    await Future<dynamic>.delayed(const Duration(milliseconds: 200));
-    return true;
-  }
-
-  @override
-  void dispose() {
-    animationController.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      color: ShopAppTheme.buildLightTheme().backgroundColor,
-      child: SafeArea(
-        top: false,
-        bottom: true,
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Column(
+    pr = new ProgressDialog(context,
+        type: ProgressDialogType.Normal, isDismissible: false, showLogs: true);
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Login", style: AppTheme.title),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: AppTheme.nearlyBlack,
+      ),
+      backgroundColor: AppTheme.nearlyWhite,
+      body: Center(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          padding: EdgeInsets.only(
+              left: getProportionateScreenWidth(16.0),
+              right: getProportionateScreenWidth(16.0)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              getAppBarUI(),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: isLoading
-                      ? Center(
-                          child: CircularProgressIndicator(),
-                        )
-                      : Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: <Widget>[
-                            Container(
-                              height: 140,
-                              child: AspectRatio(
-                                aspectRatio: 2,
-                                child: Container(
-                                  child: _cuyuyuLogo(),
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 10),
-                            Form(
-                              key: _formKey,
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: <Widget>[
-                                  Container(
-                                    padding: EdgeInsets.only(
-                                        left: 8.0,
-                                        top: 4.0,
-                                        bottom: 4.0,
-                                        right: 8.0),
-                                    child: TextFormField(
-                                      initialValue: email,
-                                      validator: (value) {
-                                        if (value == null ||
-                                            value.trim().isEmpty) {
-                                          return 'Preenchimento obrigatório!';
-                                        }
-                                        if (!value.trim().contains('@') ||
-                                            !value.trim().contains('.')) {
-                                          return 'Informe um email válido!';
-                                        }
-                                        return null;
-                                      },
-                                      onSaved: (value) {
-                                        email = value;
-                                      },
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyText2
-                                          .copyWith(
-                                              fontFamily: 'Raleway',
-                                              fontSize: 14),
-                                      cursorColor: colorScheme.onSurface,
-                                      autofocus: true,
-                                      decoration: InputDecoration(
-                                        border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(5.0),
-                                        ),
-                                        labelText: 'E-mail',
-                                        hintText: 'E-mal',
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 10),
-                                  Container(
-                                    padding: EdgeInsets.only(
-                                        left: 8.0,
-                                        top: 4.0,
-                                        bottom: 4.0,
-                                        right: 8.0),
-                                    child: TextFormField(
-                                      initialValue: password,
-                                      validator: (value) {
-                                        if (value == null ||
-                                            value.trim().isEmpty) {
-                                          return 'Preenchimento obrigatório!';
-                                        }
-                                        if (value.trim().length < 8) {
-                                          return 'A senha não pode ser menor que 8 Caracteres';
-                                        }
-                                        return null;
-                                      },
-                                      onSaved: (value) {
-                                        password = value;
-                                      },
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyText2
-                                          .copyWith(
-                                              fontFamily: 'Raleway',
-                                              fontSize: 14),
-                                      cursorColor: colorScheme.onSurface,
-                                      obscureText: _obscuredText,
-                                      decoration: InputDecoration(
-                                        border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(5.0),
-                                        ),
-                                        labelText: 'Password',
-                                        hintText: 'Password',
-                                        suffixIcon: GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              _obscuredText = !_obscuredText;
-                                            });
-                                          },
-                                          child: Icon(_obscuredText
-                                              ? Icons.visibility
-                                              : Icons.visibility_off),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 10),
-                                  Container(
-                                    padding: EdgeInsets.only(
-                                        left: 8.0,
-                                        top: 4.0,
-                                        bottom: 4.0,
-                                        right: 8.0),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(30)),
-                                      child: RaisedButton(
-                                        color: AppTheme.cuyuyuOrange,
-                                        padding: EdgeInsets.all(16.0),
-                                        child: Text(
-                                          'Iniciar sessão',
-                                          textAlign: TextAlign.center,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .subtitle1
-                                              .copyWith(
-                                                  fontFamily: 'Raleway',
-                                                  color: AppTheme.cuyuyuSurfaceWhite,
-                                                  fontWeight: FontWeight.w500),
-                                        ),
-                                        onPressed: () {
-                                          bool isValid =
-                                              _formKey.currentState.validate();
-                                          if (isValid) {
-                                            setState(() {
-                                              isLoading = true;
-                                            });
-                                            _formKey.currentState.save();
-                                            logInToFb(email, password);
-                                            _formKey.currentState.reset();
-                                            Navigator.of(context)
-                                                .push(MaterialPageRoute(
-                                              builder: (context) =>
-                                                  NavigationHomeScreen(),
-                                            ));
-                                          }
-                                        },
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(5.0),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 15),
-                                  Container(
-                                    padding: EdgeInsets.only(
-                                        left: 8.0,
-                                        top: 4.0,
-                                        bottom: 4.0,
-                                        right: 8.0),
-                                    child: Row(
-                                      children: <Widget>[
-                                        Expanded(
-                                          flex: 3,
-                                          child: InkWell(
-                                            onTap: () {
-                                              Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          RegisterPage()));
-                                            },
-                                            child: Text(
-                                              'Junta-te a nós',
-                                              textAlign: TextAlign.start,
-                                              style: AppTheme
-                                                  .textTheme.subtitle2
-                                                  .copyWith(
-                                                      color:
-                                                          AppTheme.cuyutyuBlue),
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 5,
-                                          child: InkWell(
-                                            onTap: () {},
-                                            child: Text(
-                                                'Esqueci a palavra-passe',
-                                                textAlign: TextAlign.end,
-                                                style: AppTheme
-                                                    .textTheme.subtitle2
-                                                    .copyWith(
-                                                        color: AppTheme
-                                                            .cuyutyuBlue)),
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(height: 10),
-                                  SizedBox(height: 10),
-                                  Center(
-                                    child: Text('OU'),
-                                  ),
-                                  SizedBox(height: 10),
-                                  Container(
-                                    padding: EdgeInsets.only(
-                                        left: 8.0,
-                                        top: 4.0,
-                                        bottom: 4.0,
-                                        right: 8.0),
-                                    child: SignInButton(
-                                      Buttons.Google,
-                                      text: 'Google',
-                                      onPressed: () {},
-                                      padding: EdgeInsets.all(8),
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(5.0)),
-                                    ),
-                                  ),
-                                  SizedBox(height: 10),
-                                  Container(
-                                    padding: EdgeInsets.only(
-                                        left: 8.0,
-                                        top: 4.0,
-                                        bottom: 4.0,
-                                        right: 8.0),
-                                    child: SignInButton(
-                                      Buttons.Facebook,
-                                      text: 'Facebook',
-                                      onPressed: () {},
-                                      padding: EdgeInsets.all(15),
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(5.0)),
-                                    ),
-                                  ),
-                                  SizedBox(height: 10),
-                                ],
-                              ),
-                            ),
-                          ],
+              FadeInImagePlaceholder(
+                image: const AssetImage('images/logo_app.png'),
+                height: getProportionateScreenHeight(150),
+                width: getProportionateScreenWidth(150),
+                placeholder: Container(
+                  width: getProportionateScreenWidth(32),
+                  height: getProportionateScreenHeight(32),
+                ),
+              ),
+              SizedBox(height: getProportionateScreenHeight(30)),
+              Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    TextFormField(
+                        initialValue: email,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Preenchimento obrigatório!';
+                          }
+                          if (!value.trim().contains('@') ||
+                              !value.trim().contains('.')) {
+                            return 'Informe um email válido!';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          email = value;
+                        },
+                        style: AppTheme.display4
+                            .copyWith(fontFamily: 'Muli'),
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(25.0),
+                          ),
+                          labelText: 'E-mail',
+                          hintText: 'E-mal',
                         ),
+                      ),
+
+                    SizedBox(height: 10),
+
+                    TextFormField(
+                        initialValue: password,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Preenchimento obrigatório!';
+                          }
+                          if (value.trim().length < 8) {
+                            return 'A senha não pode ser menor que 8 Caracteres';
+                          }
+                          return null;
+                        },
+                        onSaved: (value) {
+                          password = value;
+                        },
+                        style: AppTheme.display4
+                            .copyWith(fontFamily: 'Muli'),
+                        obscureText: _obscuredText,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(25.0),
+                          ),
+                          labelText: 'Password',
+                          hintText: 'Password',
+                          suffixIcon: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _obscuredText = !_obscuredText;
+                              });
+                            },
+                            child: Icon(_obscuredText
+                                ? Icons.visibility
+                                : Icons.visibility_off),
+                          ),
+                        ),
+                      ),
+
+                    SizedBox(height: getProportionateScreenHeight(25)),
+
+                    DefaultButton(
+                      text: "Iniciar sessão",
+                      press: () {
+                        if (_formKey.currentState.validate()) {
+                          _formKey.currentState.save();
+                          siginIn(email, password);
+                          KeyboardUtil.hideKeyboard(context);
+                        }
+                      },
+                    ),
+                    SizedBox(height: getProportionateScreenHeight(10)),
+                    Center(
+                      child: Text(
+                        'OU',
+                        style: AppTheme.display4,
+                      ),
+                    ),
+                    SizedBox(height: getProportionateScreenHeight(10)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: SocalCard(
+                            icon: "images/facebook.png",
+                            press: () {
+                              Toast.show(
+                                "Indisponível! Tente outra forma.",
+                                context,
+                                duration: Toast.LENGTH_LONG,
+                                gravity: Toast.CENTER,
+                              );
+                            },
+                          ),
+                        ),
+                        Flexible(
+                            child: SocalCard(
+                          icon: "images/google.png",
+                          press: () {
+                            googleSignIn();
+                          },
+                        )),
+                      ],
+                    ),
+                    SizedBox(height: getProportionateScreenHeight(20)),
+                    Padding(
+                      padding: EdgeInsets.only(
+                          left: getProportionateScreenWidth(16.0),
+                          right: getProportionateScreenWidth(16.0)),
+                      child: Row(
+                        children: <Widget>[
+                          Expanded(
+                            flex: 1,
+                            child: Container(),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  Get.to(()=>ChangePasswordPage());
+                                });
+                              },
+                              child:Text('Esqueci a palavra-passe',
+                                      textAlign: TextAlign.center,
+                                      style: AppTheme.caption.copyWith(
+                                          color: AppTheme.cuyutyuBlue,
+                                          fontWeight: FontWeight.bold))
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: getProportionateScreenHeight(20)),
+                    NoAccountText(),
+                    SizedBox(height: getProportionateScreenHeight(20)),
+                  ],
                 ),
               ),
             ],
@@ -360,73 +245,232 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget getAppBarUI() {
-    return Container(
-      decoration: BoxDecoration(
-        color: ShopAppTheme.buildLightTheme().backgroundColor,
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-              color: Colors.grey.withOpacity(0.0),
-              offset: const Offset(0, 0),
-              blurRadius: 0.0),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top, left: 8, right: 8),
-        child: Row(
-          children: <Widget>[
-            Container(
-              alignment: Alignment.centerLeft,
-              width: AppBar().preferredSize.height + 40,
-              height: AppBar().preferredSize.height,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(32.0),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Icon(Icons.arrow_back_ios),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: Text(
-                  'Login',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16.0,
-                    fontFamily: 'Raleway',
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              width: AppBar().preferredSize.height + 40,
-              height: AppBar().preferredSize.height,
-            )
-          ],
-        ),
-      ),
-    );
+  Future<bool> googleSignIn() async {
+    GoogleSignInAccount googleSignInAccount = await _googleSignIn.signIn();
+
+    if (googleSignInAccount != null) {
+      GoogleSignInAuthentication googleSignInAuthentication =
+      await googleSignInAccount.authentication;
+
+      AuthCredential authCredential = GoogleAuthProvider.credential(
+          idToken: googleSignInAuthentication.idToken,
+          accessToken: googleSignInAuthentication.accessToken);
+
+      UserCredential result =
+      await _firebaseAuth.signInWithCredential(authCredential);
+
+      User user = _firebaseAuth.currentUser;
+
+      if (result.additionalUserInfo.isNewUser) {
+        userReference.doc(user.uid).set({
+          ID: user.uid,
+          USER_NAME: user.displayName,
+          PHONE_NUMBER: user.phoneNumber,
+          USER_MAIL: user.email,
+          ADDRESS: 'default',
+          USER_CARD: 'default',
+          GENDER: 'default',
+          PHOTO_URL:
+          'https://images.unsplash.com/photo-1542309667-2a115d1f54c6?ixid=MnwxMjA3fDB8MHxzZWFyY2h8OTN8fHByb2ZpbGV8ZW58MHx8MHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
+          USER_TYPE: 'Cliente',
+          TIMESTAMP: Timestamp.now()
+        }).then((res) {
+          pr.style(
+              message: 'Aguarde...',
+              borderRadius: 10.0,
+              backgroundColor: Colors.white,
+              progressWidget: CircularProgressIndicator(),
+              elevation: 10.0,
+              insetAnimCurve: Curves.easeInOut,
+              progress: 0.0,
+              maxProgress: 100.0,
+              progressTextStyle: AppTheme.caption,
+              messageTextStyle: AppTheme.display6);
+          pr.show();
+          Future.delayed(Duration(seconds: 5)).then((value) {
+            pr.hide().whenComplete(() {
+              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                builder: (context) {
+                  return HomeScreen();
+                },
+              ), (route) => false);
+            });
+          });
+        });
+      } else {
+        pr.style(
+            message: 'Aguarde...',
+            borderRadius: 10.0,
+            backgroundColor: Colors.white,
+            progressWidget: CircularProgressIndicator(),
+            elevation: 10.0,
+            insetAnimCurve: Curves.easeInOut,
+            progress: 0.0,
+            maxProgress: 100.0,
+            progressTextStyle: AppTheme.caption,
+            messageTextStyle: AppTheme.display6);
+        pr.show();
+        Future.delayed(Duration(seconds: 5)).then((value) {
+          pr.hide().whenComplete(() {
+            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+              builder: (context) {
+                return HomeScreen();
+              },
+            ), (route) => false);
+          });
+        });
+      }
+
+      print(user.uid);
+      return Future.value(true);
+    }
   }
 
-  Widget _cuyuyuLogo() {
-    return FadeInImagePlaceholder(
-      image: const AssetImage('images/logo_app.png'),
-      height: 150,
-      width: 150,
-      placeholder: Container(
-        width: 32,
-        height: 32,
-      ),
-    );
+  Future<bool> siginIn(
+       String email, String password) async {
+    try {
+       await _firebaseAuth.signInWithEmailAndPassword(
+          email: email, password: password);
+      _formKey.currentState.reset();
+      pr.style(
+          message: 'Aguarde...',
+          borderRadius: 10.0,
+          backgroundColor: Colors.white,
+          progressWidget: CircularProgressIndicator(),
+          elevation: 10.0,
+          insetAnimCurve: Curves.easeInOut,
+          progress: 0.0,
+          maxProgress: 100.0,
+          progressTextStyle: AppTheme.caption,
+          messageTextStyle: AppTheme.display6);
+      pr.show();
+      Future.delayed(Duration(seconds: 5)).then((value) {
+        pr.hide().whenComplete(() {
+          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+            builder: (context) {
+              return HomeScreen();
+            },
+          ), (route) => false);
+        });
+      });
+
+    } catch (e) {
+      switch (e.code) {
+        case 'invalid-email':
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text(
+                    "Login",
+                    style: AppTheme.title,
+                  ),
+                  content: Text('Endereço de email parece mal formado',style: AppTheme.display4,),
+                  actions: [
+                    FlatButton(
+                      child: Text("Ok",style: AppTheme.display4,),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    )
+                  ],
+                );
+              });
+          print('our email address appears to be malformed.');
+          break;
+        case 'wrong-password':
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text(
+                    "Login",
+                    style: AppTheme.title,
+                  ),
+                  content: Text('Password errada',style: AppTheme.display4,),
+                  actions: [
+                    FlatButton(
+                      child: Text("Ok", style: AppTheme.display4,),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    )
+                  ],
+                );
+              });
+          print('our email address appears to be malformed.');
+          break;
+        case 'user-not-found':
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text(
+                    "Login",
+                    style: AppTheme.title,
+                  ),
+                  content: Text('Não existe nenhum utilizador com este email', style: AppTheme.display4,),
+                  actions: [
+                    FlatButton(
+                      child: Text("Ok",style: AppTheme.display4,),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    )
+                  ],
+                );
+              });
+          print('User with this email doesn\'t exist');
+          break;
+        case 'user-disabled':
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text(
+                    "Login",
+                    style: AppTheme.title,
+                  ),
+                  content: Text('Endereço de email desabilitado',style: AppTheme.display4,),
+                  actions: [
+                    FlatButton(
+                      child: Text("Ok",style: AppTheme.display4,),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    )
+                  ],
+                );
+              });
+          print('User with this email has been disabled.');
+          break;
+        default:
+          print('Erro inesperado!');
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text(
+                    "Login",
+                    style: AppTheme.textTheme.headline5,
+                  ),
+                  content: Text('Erro inesperado. Tente outra vez'),
+                  actions: [
+                    TextButton(
+                      child: Text("Ok"),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    )
+                  ],
+                );
+              });
+          break;
+      }
+    }
   }
+
 }
+
+
+

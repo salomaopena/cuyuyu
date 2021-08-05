@@ -1,13 +1,17 @@
+//@dart=2.9
 import 'dart:math';
-
+import 'package:cuyuyu/src/components/bottom_nav_bar.dart';
 import 'package:cuyuyu/src/models/cart_model.dart';
+import 'package:cuyuyu/src/users/login_page.dart';
 import 'package:cuyuyu/src/utils/app_theme.dart';
+import 'package:cuyuyu/src/utils/custom_button.dart';
 import 'package:cuyuyu/src/utils/databases/database_app.dart';
-import 'package:cuyuyu/src/utils/shop_app_theme.dart';
+import 'package:cuyuyu/src/utils/enums.dart';
+import 'package:cuyuyu/src/utils/size_config.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:toast/toast.dart';
+import 'package:get/get.dart';
 
 import 'order_page.dart';
 
@@ -18,11 +22,10 @@ class CartPage extends StatefulWidget {
 
 class _CartPageState extends State<CartPage> {
   final dbHelper = DatabaseApp.instance;
-  final List<CartModel> list = List();
+  final List<CartModel> list = []..length;
 
   @override
   void initState() {
-    //Toast.show(getDistanceFromGPSPointsInRoute(LatLng(),).toString(), context)
     setState(() {
       _getCarts();
     });
@@ -31,23 +34,32 @@ class _CartPageState extends State<CartPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: ShopAppTheme.buildLightTheme().backgroundColor,
-      child: Scaffold(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Carrinho de compras", style: AppTheme.title),
+        elevation: 0,
+        iconTheme: IconThemeData.fallback(),
         backgroundColor: Colors.transparent,
-        body: Column(
-          children: <Widget>[
-            getAppBarUI(),
-            Expanded(
-              child: Center(
-                child: getCartList(),
-              ),
-            ),
-            list.length > 0 ? const Divider(height: 1) : Container(),
-            list.length > 0
-                ? Padding(
-                    padding: const EdgeInsets.only(
-                        left: 0, right: 0, bottom: 16, top: 16),
+        foregroundColor: AppTheme.nearlyBlack,
+      ),
+      backgroundColor: AppTheme.nearlyWhite,
+      body: Column(
+        children: <Widget>[
+          Expanded(
+            child: getCartList(),
+          ),
+          list.length > 0
+              ? Divider(height: getProportionateScreenHeight(1))
+              : Container(),
+          list.length > 0
+              ? Container(
+                  decoration: BoxDecoration(
+                    color: AppTheme.cuyuyuSurfaceWhite,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                        bottom: getProportionateScreenHeight(16),
+                        top: getProportionateScreenHeight(16)),
                     child: Column(
                       children: <Widget>[
                         Container(
@@ -60,77 +72,71 @@ class _CartPageState extends State<CartPage> {
                               child: Row(
                                 children: <Widget>[
                                   Expanded(
-                                    child: Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 16.0, top: 2, bottom: 2),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.stretch,
-                                          children: <Widget>[
-                                            Text(
-                                              'Subtotal',
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 18,
-                                                  color: AppTheme.cuyuyuOrange,
-                                                  fontFamily: 'Raleway'),
-                                              textAlign: TextAlign.left,
-                                            ),
-                                            Text(
-                                              'Frete',
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 18,
-                                                  color: AppTheme.cuyuyuOrange,
-                                                  fontFamily: 'Raleway'),
-                                              textAlign: TextAlign.left,
-                                            ),
-                                            Text(
-                                              'Total',
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 18,
-                                                  color: AppTheme.cuyuyuOrange,
-                                                  fontFamily: 'Raleway'),
-                                              textAlign: TextAlign.left,
-                                            ),
-                                          ],
-                                        ),
+                                    child: Padding(
+                                      padding: EdgeInsets.only(
+                                        left: getProportionateScreenWidth(16.0),
+                                        top: getProportionateScreenHeight(2),
+                                        bottom: getProportionateScreenHeight(2),
+                                        right:
+                                            getProportionateScreenWidth(16.0),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            'Subtotal',
+                                            style: AppTheme.caption.copyWith(
+                                                fontFamily: 'Muli',
+                                                fontWeight: FontWeight.w700),
+                                          ),
+                                          Text(
+                                            'Frete',
+                                            style: AppTheme.caption.copyWith(
+                                                fontFamily: 'Muli',
+                                                fontWeight: FontWeight.w700),
+                                          ),
+                                          Text(
+                                            'Total',
+                                            style: AppTheme.caption.copyWith(
+                                                fontFamily: 'Muli',
+                                                fontWeight: FontWeight.w700),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
                                   Expanded(
-                                    child: Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 16.0, top: 2, bottom: 2),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.stretch,
-                                          children: <Widget>[
-                                            Text('Kz. $subtotal',
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.w500,
-                                                    fontSize: 15,
-                                                    color:
-                                                        AppTheme.darkerText)),
-                                            Text(
-                                                'Kz. ${totalFrete.roundToDouble()}',
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.w500,
-                                                    fontSize: 15,
-                                                    color:
-                                                        AppTheme.darkerText)),
-                                            Text(
-                                                'Kz. ${totalToPay.roundToDouble()}',
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.w500,
-                                                    fontSize: 15,
-                                                    color:
-                                                        AppTheme.darkerText)),
-                                          ],
-                                        ),
+                                    child: Padding(
+                                      padding: EdgeInsets.only(
+                                          left:
+                                              getProportionateScreenWidth(16.0),
+                                          top: getProportionateScreenHeight(2),
+                                          right:
+                                              getProportionateScreenWidth(16.0),
+                                          bottom:
+                                              getProportionateScreenHeight(2)),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: <Widget>[
+                                          Text('Kz. $subtotal',
+                                              style: AppTheme.caption.copyWith(
+                                                  fontFamily: 'Muli',
+                                                  fontWeight: FontWeight.w700)),
+                                          Text(
+                                              'A calcular...', //'Kz. ${totalFrete.roundToDouble()}'
+                                              style: AppTheme.caption.copyWith(
+                                                  fontFamily: 'Muli',
+                                                  fontWeight: FontWeight.w700,
+                                                color: AppTheme.closeColor
+                                              )),
+                                          Text(
+                                              'Kz. ${totalToPay.roundToDouble()}',
+                                              style: AppTheme.caption.copyWith(
+                                                  fontFamily: 'Muli',
+                                                  fontWeight: FontWeight.w700)),
+                                        ],
                                       ),
                                     ),
                                   ),
@@ -139,87 +145,57 @@ class _CartPageState extends State<CartPage> {
                             ),
                           ),
                         ),
-                        Container(
-                          height: 40,
-                          margin: EdgeInsets.only(
-                              left: 8.0, right: 8.0, top: 8.0, bottom: 0.0),
-                          decoration: BoxDecoration(
-                            color: Colors.blue,
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(4.0)),
-                            boxShadow: <BoxShadow>[
-                              BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  offset: const Offset(0, 0),
-                                  blurRadius: 8.0),
-                            ],
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                if (FirebaseAuth.instance.currentUser != null) {
-                                  if (list.length > 0) {
-                                    Navigator.of(context)
-                                        .push(MaterialPageRoute(
-                                      builder: (context) => OrderPage(
-                                          list: list,
-                                          subtotal: subtotal,
-                                          frete: totalFrete,
-                                          total: totalToPay),
-                                    ));
-                                  }
-                                } else {
-                                  Toast.show(
-                                      "Por favor, inicie sessão.", context,
-                                      duration: Toast.LENGTH_LONG,
-                                      gravity: Toast.CENTER);
-                                }
-                              },
-                              child: Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: Center(
-                                    child: Text(
-                                      'Finalizar',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18,
-                                          color: AppTheme.nearlyWhite),
+                        SizedBox(
+                          height: 5,
+                        ),
+                        OpenFlutterButton(
+                            title: 'Finalizar',
+                            width: getProportionateScreenWidth(250),
+                            height: getProportionateScreenHeight(50),
+                            onPressed: () {
+                              if (FirebaseAuth.instance.currentUser != null) {
+                                if (list.length > 0) {
+                                  Get.to(
+                                    () => OrderPage(
+                                      list: list,
+                                      subtotal: subtotal,
+                                      frete: totalFrete,
+                                      total: totalToPay,
                                     ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : Container(
-                    width: MediaQuery.of(context).size.width,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.max,
-                      children: <Widget>[
-                        Center(
-                          child: Image.asset(
-                            "images/empty_shopping_cart.png",
-                            filterQuality: FilterQuality.high,
-                            fit: BoxFit.fill,
-                          ),
-                        ),
-                        Text(
-                          "Não realizou nenhum pedido!",
-                          style: AppTheme.textTheme.subtitle2,
-                        )
+                                  );
+                                }
+                              } else {
+                                Get.to(() => LoginPage());
+                              }
+                            }),
                       ],
                     ),
                   ),
-          ],
-        ),
+                )
+              : Container(
+                  width: double.infinity,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.max,
+                    children: <Widget>[
+                      Center(
+                        child: Image.asset(
+                          "images/empty_shopping_cart.png",
+                          filterQuality: FilterQuality.high,
+                          fit: BoxFit.fill,
+                        ),
+                      ),
+                      Text(
+                        "Não realizou nenhum pedido!",
+                        style: AppTheme.textTheme.subtitle2,
+                      )
+                    ],
+                  ),
+                ),
+        ],
       ),
+      bottomNavigationBar: CustomBottomNavBar(selectedMenu: MenuState.home),
     );
   }
 
@@ -263,7 +239,7 @@ class _CartPageState extends State<CartPage> {
 
   double get totalToPay {
     double total = 0.0;
-    total = subtotal + totalFrete;
+    total = subtotal; //+ totalFrete;
     return total;
   }
 
@@ -282,77 +258,28 @@ class _CartPageState extends State<CartPage> {
     return totalDistance.roundToDouble();
   }
 
-  Widget getAppBarUI() {
-    return Container(
-      decoration: BoxDecoration(
-        color: ShopAppTheme.buildLightTheme().backgroundColor,
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              offset: const Offset(0, 2),
-              blurRadius: 4.0),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top, left: 8, right: 8),
-        child: Row(
-          children: <Widget>[
-            Container(
-              alignment: Alignment.centerLeft,
-              width: AppBar().preferredSize.height + 40,
-              height: AppBar().preferredSize.height,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(32.0),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Icon(Icons.arrow_back_ios),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: Text(
-                  'Carrinho de compras',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              width: AppBar().preferredSize.height + 40,
-              height: AppBar().preferredSize.height,
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget getCartList() {
     return Container(
       child: ListView.builder(
-        padding: EdgeInsets.only(left: 6.0, right: 6.0, top: 8.0, bottom: 8.0),
+        padding: EdgeInsets.only(
+          left: getProportionateScreenWidth(6.0),
+          right: getProportionateScreenWidth(6.0),
+          top: getProportionateScreenHeight(8.0),
+          bottom: getProportionateScreenHeight(8.0),
+        ),
         itemCount: list.length,
         itemBuilder: (context, index) {
           CartModel item = list[index];
           return list.length > 0
               ? Card(
-                  elevation: 3,
+                  color: AppTheme.cuyuyuSurfaceWhite,
+                  elevation: 0.3,
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       Container(
-                        height: 125,
-                        width: 110,
+                        height: getProportionateScreenHeight(125),
+                        width: getProportionateScreenWidth(110),
                         padding: EdgeInsets.only(
                             left: 0, top: 10, bottom: 70, right: 20),
                         decoration: BoxDecoration(
@@ -371,15 +298,11 @@ class _CartPageState extends State<CartPage> {
                                   children: <Widget>[
                                     Text(
                                       '${item.cartDiscount}%',
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.normal),
+                                      style: AppTheme.body2,
                                     ),
                                     Text(
                                       "Promoção",
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.normal),
+                                      style: AppTheme.body2,
                                     ),
                                   ],
                                 ),
@@ -394,40 +317,39 @@ class _CartPageState extends State<CartPage> {
                             children: <Widget>[
                               Text(
                                 '${item.cartName}',
-                                style: TextStyle(
-                                    color: AppTheme.cuyuyuOrange,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 17),
+                                style: AppTheme.display4.copyWith(
+                                    color: AppTheme.redColor,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: 'Muli'),
+                                overflow: TextOverflow.ellipsis,
                               ),
                               SizedBox(height: 5),
                               Text(
-                                '${item.cartDescription}',
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                    fontSize: 14, color: Colors.black87),
-                              ),
-                              Text(
                                 '\Kz ${double.parse(item.cartPrice)}',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.bold),
+                                style: AppTheme.body1.copyWith(
+                                    fontFamily: 'Muli',
+                                    fontWeight: FontWeight.w700),
                               ),
                               SizedBox(
-                                height: 5,
+                                height: 1,
                               ),
                               Row(
                                 children: <Widget>[
                                   Text(
                                     "Subtotal:",
-                                    style: TextStyle(fontSize: 13),
+                                    style: AppTheme.body1.copyWith(
+                                      fontFamily: 'Muli',
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
                                   SizedBox(
-                                    width: 5,
+                                    width: getProportionateScreenWidth(10),
                                   ),
                                   Text(
                                     '\Kz ${(double.parse(item.cartPrice) * int.parse(item.cartQuantity))}',
-                                    style: TextStyle(fontSize: 13),
+                                    style: AppTheme.body1.copyWith(
+                                        fontFamily: 'Muli',
+                                        fontWeight: FontWeight.w700),
                                   ),
                                 ],
                               ),
@@ -436,24 +358,6 @@ class _CartPageState extends State<CartPage> {
                                   Expanded(
                                     child: Row(
                                       children: <Widget>[
-                                        Expanded(
-                                          child: IconButton(
-                                            icon: Icon(Icons.add_circle),
-                                            color: AppTheme.nearlyBlue,
-                                            onPressed: () {
-                                              _increase(item);
-                                              _getCarts();
-                                            },
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: Text(
-                                            "${item.cartQuantity}",
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
                                         Expanded(
                                           child: IconButton(
                                             icon: Icon(
@@ -467,7 +371,25 @@ class _CartPageState extends State<CartPage> {
                                               });
                                             },
                                           ),
-                                        )
+                                        ),
+                                        Expanded(
+                                          child: Text(
+                                            "${item.cartQuantity}",
+                                            textAlign: TextAlign.center,
+                                            style: AppTheme.display4
+                                                .copyWith(fontFamily: 'Muli'),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: IconButton(
+                                            icon: Icon(Icons.add_circle),
+                                            color: AppTheme.nearlyBlue,
+                                            onPressed: () {
+                                              _increase(item);
+                                              _getCarts();
+                                            },
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -479,7 +401,7 @@ class _CartPageState extends State<CartPage> {
                                         setState(() {
                                           _delete(item);
                                           _getCarts();
-                                          Scaffold.of(context)
+                                          ScaffoldMessenger.of(context)
                                               .showSnackBar(SnackBar(
                                             duration: Duration(seconds: 2),
                                             content: new Text(

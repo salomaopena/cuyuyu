@@ -1,5 +1,5 @@
+//@dart=2.9
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 
 class BannerModel {
   static const BANNER_TITLE = "title";

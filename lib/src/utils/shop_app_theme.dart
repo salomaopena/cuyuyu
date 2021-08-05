@@ -1,9 +1,10 @@
+//@dart=2.9
 import 'package:cuyuyu/main.dart';
 import 'package:flutter/material.dart';
 
 class ShopAppTheme {
   static TextTheme _buildTextTheme(TextTheme base) {
-    const String fontName = 'Raleway';
+    const String fontName = 'Metropolis';
     return base.copyWith(
       headline1: base.headline1.copyWith(fontFamily: fontName),
       headline2: base.headline2.copyWith(fontFamily: fontName),

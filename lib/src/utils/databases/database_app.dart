@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:cuyuyu/src/models/cart_model.dart';
 import 'package:cuyuyu/src/models/wish_list.dart';
 import 'package:path/path.dart';

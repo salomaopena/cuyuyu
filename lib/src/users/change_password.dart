@@ -1,11 +1,11 @@
-import 'package:cuyuyu/src/custom_drawer/navigation_home_screen.dart';
+//@dart=2.9
+import 'package:cuyuyu/src/pages/home/home_screen.dart';
 import 'package:cuyuyu/src/utils/app_theme.dart';
-import 'package:cuyuyu/src/utils/colors.dart';
-import 'package:cuyuyu/src/utils/shop_app_theme.dart';
+import 'package:cuyuyu/src/utils/default_button.dart';
+import 'package:cuyuyu/src/utils/size_config.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:toast/toast.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   @override
@@ -16,17 +16,42 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   final _formKey = GlobalKey<FormState>();
   final _firebaseAuth = FirebaseAuth.instance;
   String email;
-  bool isLoading = false;
+  bool isLoading =  false;
 
-  Future<void> resetPassword(String email,) async {
+  Future<void> resetPassword(
+    String email,
+  ) async {
     _firebaseAuth.sendPasswordResetEmail(email: email).then((result) {
-      isLoading = false;
-      Toast.show(
-        "Consulte o email " + email + " para redefinir a senha.",
-        context,
-        duration: Toast.LENGTH_LONG,
-        gravity: Toast.CENTER,
-      );
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(
+                "Sucesso",
+                style: AppTheme.title,
+              ),
+              content: Text(
+                "Consulte o email " + email + " para redefinir a senha",
+                style: AppTheme.display4,
+              ),
+              actions: [
+                TextButton(
+                  child: Text(
+                    "Ok",
+                    style: AppTheme.display4,
+                  ),
+                  onPressed: () {
+                    isLoading = false;
+                    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                      builder: (context) {
+                        return HomeScreen();
+                      },
+                    ), (route) => false);
+                  },
+                )
+              ],
+            );
+          });
     }).catchError((err) {
       print(err.message);
       showDialog(
@@ -35,12 +60,18 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
             return AlertDialog(
               title: Text(
                 "Informação",
-                style: AppTheme.textTheme.headline5,
+                style: AppTheme.title,
               ),
-              content: Text(err.message),
+              content: Text(
+                "Ocorreu um erro. Verifique o seu email",
+                style: AppTheme.display4,
+              ),
               actions: [
-                FlatButton(
-                  child: Text("Ok"),
+                TextButton(
+                  child: Text(
+                    "Ok",
+                    style: AppTheme.display4,
+                  ),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
@@ -53,187 +84,77 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      color: ShopAppTheme.buildLightTheme().backgroundColor,
-      child: SafeArea(
-        top: false,
-        bottom: true,
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Column(
-            children: [
-              getAppBarUI(),
-              Expanded(
-                child: SafeArea(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) => Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.0),
-                      child: SingleChildScrollView(
-                        child: ConstrainedBox(
-                          constraints:
-                              BoxConstraints(minHeight: constraints.maxHeight),
-                          child: Center(
-                            child: Form(
-                              key: _formKey,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: <Widget>[
-                                  Padding(
-                                    padding: EdgeInsets.only(
-                                        bottom: 20.0, top: 20.0),
-                                    child: Text(
-                                      'Informe os dados',
-                                      textAlign: TextAlign.start,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headline6
-                                          .copyWith(
-                                              fontFamily: 'Raleway',
-                                              fontSize: 20.0,
-                                              fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                  TextFormField(
-                                    initialValue: email,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyText2
-                                        .copyWith(
-                                            fontFamily: 'Raleway',
-                                            fontSize: 14),
-                                    cursorColor: colorScheme.onSurface,
-                                    keyboardType: TextInputType.emailAddress,
-                                    decoration: InputDecoration(
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      labelText: 'Email',
-                                      hintText: 'Email',
-                                    ),
-                                    validator: (value) {
-                                      if (value == null ||
-                                          value.trim().isEmpty) {
-                                        return 'Preenchimento obrigatório!';
-                                      }
-                                      if (!value.trim().contains('@') ||
-                                          !value.trim().contains('.')) {
-                                        return 'Informe um email válido!';
-                                      }
-                                      return null;
-                                    },
-                                    onSaved: (value) {
-                                      email = value;
-                                    },
-                                  ),
-                                  SizedBox(height: 20),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    child: RaisedButton(
-                                      color: AppTheme.cuyuyuLigthBlue,
-                                      padding: EdgeInsets.all(16.0),
-                                      child: Text(
-                                        'Enviar',
-                                        textAlign: TextAlign.center,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .subtitle1
-                                            .copyWith(
-                                                fontFamily: 'Raleway',
-                                                color: cuyuyuSurfaceWhite,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 15.0),
-                                      ),
-                                      onPressed: () {
-                                        bool isValid =
-                                            _formKey.currentState.validate();
-                                        if (isValid) {
-                                          setState(() {
-                                            isLoading = true;
-                                          });
-                                          _formKey.currentState.save();
-                                          resetPassword(email);
-                                          _formKey.currentState.reset();
-                                        }
-                                      },
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Alterar senha", style: AppTheme.title),
+        iconTheme: IconThemeData.fallback(),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: AppTheme.nearlyBlack,
+      ),
+      backgroundColor: AppTheme.nearlyWhite,
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.only(
+                left: getProportionateScreenWidth(16.0),
+                right: getProportionateScreenWidth(16.0)),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Text(
+                    'Informe os dados',
+                    textAlign: TextAlign.start,
+                    style: AppTheme.title.copyWith(fontFamily: 'Muli'),
+                  ),
+                  SizedBox(
+                    height: getProportionateScreenHeight(25.0),
+                  ),
+                  TextFormField(
+                    initialValue: email,
+                    style: AppTheme.display4,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25.0),
                       ),
+                      labelText: 'Email',
+                      hintText: 'Email',
                     ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Preenchimento obrigatório!';
+                      }
+                      if (!value.trim().contains('@') ||
+                          !value.trim().contains('.')) {
+                        return 'Informe um email válido!';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      email = value;
+                    },
                   ),
-                ),
-              )
-            ],
+                  SizedBox(height: 20),
+                  DefaultButton(
+                    text: !isLoading?"Enviar":"Aguarde...",
+                    press: () {
+                      if (_formKey.currentState.validate()) {
+                        setState(() {
+                          isLoading = true;
+                          _formKey.currentState.save();
+                          resetPassword(email);
+                          _formKey.currentState.reset();
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget getAppBarUI() {
-    return Container(
-      decoration: BoxDecoration(
-        color: ShopAppTheme.buildLightTheme().backgroundColor,
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-              color: Colors.grey.withOpacity(0.0),
-              offset: const Offset(0, 0),
-              blurRadius: 0.0),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top, left: 8, right: 8),
-        child: Row(
-          children: <Widget>[
-            Container(
-              alignment: Alignment.centerLeft,
-              width: AppBar().preferredSize.height + 10,
-              height: AppBar().preferredSize.height,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(32.0),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Icon(Icons.arrow_back_ios),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: Text(
-                  'Alterar senha',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16.0,
-                    fontFamily: 'Raleway',
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-            Container(
-              width: AppBar().preferredSize.height + 40,
-              height: AppBar().preferredSize.height,
-            )
-          ],
         ),
       ),
     );

@@ -1,7 +1,8 @@
+//@dart=2.9
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cuyuyu/src/utils/app_theme.dart';
 import 'package:cuyuyu/src/utils/constants.dart';
-import 'package:cuyuyu/src/utils/shop_app_theme.dart';
+import 'package:cuyuyu/src/utils/size_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:toast/toast.dart';
@@ -9,15 +10,8 @@ import 'package:toast/toast.dart';
 class ShoppingListView extends StatefulWidget {
   final VoidCallback callback;
   final DocumentSnapshot shopping;
-  final AnimationController animationController;
-  final Animation<dynamic> animation;
 
-  const ShoppingListView(
-      {Key key,
-      this.callback,
-      this.shopping,
-      this.animationController,
-      this.animation})
+  const ShoppingListView({Key key, this.callback, this.shopping})
       : super(key: key);
   @override
   _ShoppingListViewState createState() => _ShoppingListViewState();
@@ -29,180 +23,131 @@ class _ShoppingListViewState extends State<ShoppingListView> {
     Timestamp timestamp = widget.shopping['orderDate'];
     String cancelado = widget.shopping['orderStatus'];
 
-    return AnimatedBuilder(
-      animation: widget.animationController,
-      builder: (context, child) {
-        return FadeTransition(
-          opacity: widget.animation,
-          child: Transform(
-            transform: Matrix4.translationValues(
-                0.0, 50.0 * (1.0 - widget.animation.value), 0.0),
-            child: Padding(
-              padding: const EdgeInsets.only(
-                  left: 4.0, right: 4.0, top: 4.0, bottom: 4.0),
-              child: GestureDetector(
-                onTap: () {
-                  widget.callback();
-                },
-                child: Container(
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.all(Radius.circular(16.0)),
-                    child: Stack(
-                      children: [
-                        Card(
-                          elevation: 3,
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: EdgeInsets.all(8),
-                                color: ShopAppTheme.buildLightTheme()
-                                    .backgroundColor,
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Text(
-                                      '#' + widget.shopping.id.toString(),
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontFamily: 'Raleway',
-                                        color: AppTheme.cuyutyuBlue,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+    return Padding(
+      padding: EdgeInsets.all(getProportionateScreenWidth(4.0)),
+      child: GestureDetector(
+        onTap: () {
+          widget.callback();
+        },
+        child: Container(
+          child: ClipRRect(
+            borderRadius: BorderRadius.all(Radius.circular(26.0)),
+            child: Stack(
+              children: [
+                Card(
+                  elevation: 3,
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(8),
+                        color: AppTheme.nearlyWhite,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              '#' + widget.shopping.id.toString(),
+                              style: AppTheme.display1.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.closeColor,
+                                fontFamily: 'Muli',
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            cancelado.contains('Cancelado')
+                                ? Text(
+                                    widget.shopping['orderStatus'],
+                                    style: AppTheme.display1.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      fontFamily: 'Muli',
                                     ),
-                                    SizedBox(height: 5),
-                                    cancelado.contains('Cancelado')
-                                        ? Text(
-                                            widget.shopping['orderStatus'],
-                                            style: TextStyle(
-                                                fontSize: 16,
-                                                fontFamily: 'Raleway',
-                                                color: Colors.red,
-                                                fontWeight: FontWeight.bold),
-                                          )
-                                        : Text(
-                                            widget.shopping['orderStatus'],
-                                            style: TextStyle(
-                                                fontSize: 16,
-                                                fontFamily: 'Raleway',
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                    SizedBox(height: 5),
-                                    Text(
-                                      timeAgoSinceDate(
-                                          timestamp.toDate().toString()),
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontFamily: 'Raleway',
-                                      ),
-                                    ),
+                                  )
+                                : Text(
+                                    widget.shopping['orderStatus'],
+                                    style: AppTheme.display1.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        fontFamily: 'Muli'),
+                                  ),
+                            SizedBox(height: 5),
+                            Text(
+                              timeAgoSinceDate(timestamp.toDate().toString()),
+                              style: AppTheme.display4,
+                            ),
 
-                                    //Divider(),
-                                    SizedBox(height: 10),
-                                    Container(
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  'Subtotal',
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    fontFamily: 'Raleway',
-                                                  ),
-                                                ),
-                                                Text(
-                                                  'Frete',
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    fontFamily: 'Raleway',
-                                                  ),
-                                                ),
-                                                Text(
-                                                  'Total',
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontFamily: 'Raleway',
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.end,
-                                              children: [
-                                                Text(
-                                                  '\Kz ${widget.shopping['subtotal']}',
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    fontFamily: 'Raleway',
-                                                  ),
-                                                ),
-                                                Text(
-                                                  '\Kz ${widget.shopping['frete']}',
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    fontFamily: 'Raleway',
-                                                  ),
-                                                ),
-                                                Text(
-                                                  '\Kz ${widget.shopping['total']}',
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontFamily: 'Raleway',
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                            //Divider(),
+                            SizedBox(height: 10),
+                            Container(
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Subtotal',
+                                          style: AppTheme.display4,
+                                        ),
+                                        Text('Frete', style: AppTheme.display4),
+                                        Text('Total',
+                                            style: AppTheme.display1.copyWith(
+                                              fontWeight: FontWeight.w700,
+                                              fontFamily: 'Muli',
+                                            )),
+                                      ],
                                     ),
-                                    !cancelado.contains('Cancelado')
-                                        ? Container(
-                                            transform: Matrix4.identity(),
-                                            child: RaisedButton(
-                                              padding: EdgeInsets.all(8.0),
-                                              color: AppTheme.nearlyWhite,
-                                              elevation: 0,
-                                              child: Text(
-                                                'Cancelar pedido',
-                                                style: AppTheme
-                                                    .textTheme.bodyText2
-                                                    .copyWith(
-                                                        color:
-                                                            AppTheme.nearlyBlue,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                              ),
-                                              onPressed: () {
-                                                updateStatus();
-                                              },
-                                            ),
-                                          )
-                                        : Container(),
-                                  ],
-                                ),
-                              )
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
+                                  ),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          '\Kz ${widget.shopping['subtotal']}',
+                                          style: AppTheme.display4,
+                                        ),
+                                        Text(
+                                          '\Kz ${widget.shopping['frete']}',
+                                          style: AppTheme.display4,
+                                        ),
+                                        Text(
+                                          '\Kz ${widget.shopping['total']}',
+                                          style: AppTheme.display1.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                            fontFamily: 'Muli',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            !cancelado.contains('Cancelado')
+                                ? Container(
+                                    transform: Matrix4.identity(),
+                                    child: TextButton(
+                                      child: Text('Cancelar pedido',
+                                      style: AppTheme.display1.copyWith(
+                                        color: AppTheme.closeColor,
+                                        fontWeight: FontWeight.w600
+                                      )),
+                                      onPressed: () {
+                                        updateStatus();
+                                      },
+                                    ),
+                                  )
+                                : Container(),
+                          ],
+                        ),
+                      )
+                    ],
                   ),
-                ),
-              ),
+                )
+              ],
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -231,7 +176,7 @@ class _ShoppingListViewState extends State<ShoppingListView> {
   }
 
   void _showExitDialog(BuildContext context) {
-    Widget cancelButton = FlatButton(
+    Widget cancelButton = TextButton(
       child: Text(
         "Ok",
         style: AppTheme.textTheme.bodyText1.copyWith(
@@ -245,7 +190,7 @@ class _ShoppingListViewState extends State<ShoppingListView> {
     AlertDialog alert = AlertDialog(
       title: Text(
         "Informação",
-        style: AppTheme.textTheme.headline6
+        style: AppTheme.title
             .copyWith(color: AppTheme.darkerText, fontWeight: FontWeight.bold),
       ),
       content: Text(

@@ -1,0 +1,1 @@
+enum MenuState { home, map, favorite, profile }

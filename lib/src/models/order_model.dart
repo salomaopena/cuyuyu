@@ -1,3 +1,4 @@
+//@dart=2.9
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
@@ -26,7 +27,7 @@ class OrderModel {
   String userPhone;
   String userEmail;
   String userAddress;
-  List<CartModel> orderDetail = new List<CartModel>();
+  List<CartModel> orderDetail = []..length;
   double frete;
   String orderAddress;
   Timestamp orderDate;
@@ -90,7 +91,7 @@ class OrderModel {
     this.total = map[TOTAL];
 
     if (map[ORDER_DETAIL] == null) {
-      this.orderDetail = new List<CartModel>();
+      this.orderDetail = []..length;
     } else {
       this.orderDetail =
           (map[ORDER_DETAIL] as List).map((i) => CartModel.fromMap(i)).toList();

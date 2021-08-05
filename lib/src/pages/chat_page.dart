@@ -1,9 +1,11 @@
+//@dart=2.9
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cuyuyu/src/components/bottom_nav_bar.dart';
 import 'package:cuyuyu/src/utils/app_theme.dart';
 import 'package:cuyuyu/src/utils/constants.dart';
-import 'package:cuyuyu/src/utils/shop_app_theme.dart';
+import 'package:cuyuyu/src/utils/enums.dart';
+import 'package:cuyuyu/src/utils/size_config.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:toast/toast.dart';
 
@@ -17,11 +19,9 @@ class _HelpPageState extends State<HelpPage> {
   final _formKey = GlobalKey<FormState>();
   final chatDB = FirebaseFirestore.instance;
   CollectionReference chatReference;
-  final FirebaseMessaging messaging = FirebaseMessaging();
 
   Timestamp time = Timestamp.now();
   String text;
-  String token;
   bool isTyping = false;
 
   @override
@@ -33,24 +33,23 @@ class _HelpPageState extends State<HelpPage> {
         .collection(CHAT_MESSAGES);
 
     //get Device Token
-    messaging.configure();
-    messaging.getToken().then((deviceToken) {
-      token = deviceToken;
-    });
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: ShopAppTheme.buildLightTheme().backgroundColor,
-      child: SafeArea(
-        bottom: true,
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
+    return Scaffold(
+          backgroundColor: AppTheme.nearlyWhite,
+          appBar: AppBar(
+            title: const Text("Chat", style: AppTheme.title),
+            elevation: 0,
+            iconTheme: IconThemeData.fallback(),
+            backgroundColor: Colors.transparent,
+            foregroundColor: AppTheme.nearlyBlack,
+          ),
           body: Column(
             children: <Widget>[
-              getAppBarUI(),
               Expanded(
                   child: auth.currentUser != null
                       ? FutureBuilder(
@@ -108,10 +107,10 @@ class _HelpPageState extends State<HelpPage> {
               Container(
                 child: senderMessage(),
               ),
+              SizedBox(height: getProportionateScreenHeight(10),)
             ],
           ),
-        ),
-      ),
+      bottomNavigationBar: CustomBottomNavBar(selectedMenu: MenuState.profile),
     );
   }
 
@@ -188,7 +187,6 @@ class _HelpPageState extends State<HelpPage> {
         'user_mail': auth.currentUser.email,
         'time': time,
         'message': text,
-        'device_token': token
       }).then((value) {
         _formKey.currentState.reset();
         isTyping = false;
@@ -200,7 +198,7 @@ class _HelpPageState extends State<HelpPage> {
                 title: Text("Erro"),
                 content: Text(err.message),
                 actions: [
-                  FlatButton(
+                  TextButton(
                     child: Text("Ok"),
                     onPressed: () {
                       Navigator.of(context).pop();
@@ -334,63 +332,6 @@ class _HelpPageState extends State<HelpPage> {
     }
   }
 
-  Widget getAppBarUI() {
-    return Container(
-      decoration: BoxDecoration(
-        color: ShopAppTheme.buildLightTheme().backgroundColor,
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-              color: Colors.grey.withOpacity(0.0),
-              offset: const Offset(0, 0),
-              blurRadius: 0.0),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top, left: 8, right: 8),
-        child: Row(
-          children: <Widget>[
-            Container(
-              alignment: Alignment.centerLeft,
-              width: AppBar().preferredSize.height + 40,
-              height: AppBar().preferredSize.height,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(32.0),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Icon(Icons.arrow_back_ios),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: Text(
-                  'Apoio & Ajuda',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16.0,
-                    fontFamily: 'Raleway',
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              width: AppBar().preferredSize.height + 40,
-              height: AppBar().preferredSize.height,
-            )
-          ],
-        ),
-      ),
-    );
-  }
 
   static String timeAgoSinceDate(String dateString,
       {bool numericDates = true}) {

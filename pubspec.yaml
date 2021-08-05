@@ -15,10 +15,10 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.0+1
+version: 1.0.0+6
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -34,21 +34,22 @@ dependencies:
   cloud_firestore: ^0.14.3
   firebase_database: ^4.3.0
   firebase_auth: ^0.18.3
-  firebase_messaging: ^7.0.3
+  google_sign_in: any
 
   google_fonts: ^0.2.0
   google_maps_flutter: ^1.0.6
   geolocator: ^6.1.6
   geocoder: ^0.2.1
 
-  badges: ^1.1.4
   carousel_pro: ^1.0.0
   sqflite: ^1.3.2+1
   toast: ^0.1.5
   font_awesome_flutter: ^8.10.0
   flutter_signin_button: ^1.1.0
   url_launcher: ^5.7.10
-  splashscreen: ^1.3.5
+  flutter_svg: ^0.19.1
+  get:
+  grouped_buttons: ^1.0.4
 
 
 dev_dependencies:
@@ -94,15 +95,69 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   fonts:
-    - family: Raleway
+    - family: Metropolis
       fonts:
-        - asset: fonts/Raleway-Regular.ttf
-        - asset: fonts/Raleway-SemiBold.ttf
+        - asset: fonts/Metropolis-Thin.otf
+          weight: 100
+          style: normal
+        - asset: fonts/Metropolis-ThinItalic.otf
+          weight: 100
           style: italic
-    - family: RobotoMono
-      fonts:
-        - asset: fonts/RobotoMono-Regular.ttf
+        - asset: fonts/Metropolis-ExtraLight.otf
+          weight: 200
+          style: normal
+        - asset: fonts/Metropolis-ExtraLightItalic.otf
+          weight: 200
+          style: italic
+        - asset: fonts/Metropolis-Light.otf
+          weight: 300
+          style: normal
+        - asset: fonts/Metropolis-LightItalic.otf
+          weight: 300
+          style: italic
+        - asset: fonts/Metropolis-Regular.otf
+          weight: 400
+          style: normal
+        - asset: fonts/Metropolis-RegularItalic.otf
+          weight: 400
+          style: italic
+        - asset: fonts/Metropolis-Medium.otf
+          weight: 500
+          style: normal
+        - asset: fonts/Metropolis-MediumItalic.otf
+          weight: 500
+          style: italic
+        - asset: fonts/Metropolis-SemiBold.otf
+          weight: 600
+          style: normal
+        - asset: fonts/Metropolis-SemiBoldItalic.otf
+          weight: 600
+          style: italic
+        - asset: fonts/Metropolis-Bold.otf
           weight: 700
+          style: normal
+        - asset: fonts/Metropolis-BoldItalic.otf
+          weight: 700
+          style: italic
+        - asset: fonts/Metropolis-ExtraBold.otf
+          weight: 800
+          style: normal
+        - asset: fonts/Metropolis-ExtraBoldItalic.otf
+          weight: 800
+          style: italic
+        - asset: fonts/Metropolis-Black.otf
+          weight: 900
+          style: normal
+        - asset: fonts/Metropolis-BlackItalic.otf
+          weight: 900
+          style: italic
+    - family: Muli
+      fonts:
+        - asset: fonts/Muli.ttf
+        - asset: fonts/Muli-Bold.ttf
+          weight: 700
+        - asset: fonts/Muli-Light.ttf
+          weight: 300
   # example:
   # fonts:
   #   - family: Schyler

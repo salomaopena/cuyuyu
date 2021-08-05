@@ -1,10 +1,12 @@
+//@dart=2.9
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cuyuyu/src/components/bottom_nav_bar.dart';
 import 'package:cuyuyu/src/models/cart_model.dart';
 import 'package:cuyuyu/src/models/wish_list.dart';
 import 'package:cuyuyu/src/utils/app_theme.dart';
-import 'package:cuyuyu/src/utils/colors.dart';
 import 'package:cuyuyu/src/utils/databases/database_app.dart';
-import 'package:cuyuyu/src/utils/shop_app_theme.dart';
+import 'package:cuyuyu/src/utils/enums.dart';
+import 'package:cuyuyu/src/utils/size_config.dart';
 import 'package:flutter/material.dart';
 import 'package:toast/toast.dart';
 
@@ -21,8 +23,8 @@ class ProductDetailPage extends StatefulWidget {
 class _ProductDetailPageState extends State<ProductDetailPage> {
   bool _isFavorited = false;
   int _counter = 1;
-  List<CartModel> carts = List();
-  final List<WishListModel> list = List();
+  List<CartModel> carts = []..length;
+  final List<WishListModel> list = []..length;
   final dbHelper = DatabaseApp.instance;
 
   int get _defaultValue => _counter;
@@ -61,13 +63,21 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: ShopAppTheme.buildLightTheme().backgroundColor,
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
+    return  Scaffold(
+        appBar: AppBar(
+          iconTheme: IconThemeData.fallback(),
+          centerTitle: true,
+          title: Text(
+            "${widget.item['name_product']}",
+            style: AppTheme.title,
+          ),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          foregroundColor: AppTheme.nearlyBlack,
+        ),
+        backgroundColor: AppTheme.nearlyWhite,
         body: Column(
           children: <Widget>[
-            getAppBarUI(),
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
@@ -101,12 +111,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           ),
                           Text(
                             widget.item['name_product'],
-                            style: Theme.of(context)
-                                .textTheme
-                                .headline5
+                            style: AppTheme.title
                                 .copyWith(
-                                    color: AppTheme.cuyutyuBlue,
-                                    fontWeight: FontWeight.bold),
+                                color: AppTheme.cuyutyuBlue,
+                                fontWeight: FontWeight.w700),
                           ),
                           SizedBox(
                             height: 5,
@@ -114,26 +122,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           Row(
                             children: [
                               Text(widget.item['unity_id'],
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .subtitle2
+                                  style: AppTheme.display4
                                       .copyWith(
-                                          color: AppTheme.cuyutyuBlue,
-                                          fontWeight: FontWeight.bold)),
+                                      color: AppTheme.cuyutyuBlue,
+                                      fontWeight: FontWeight.w700)),
                               Text('|',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .subtitle2
+                                  style: AppTheme.title
                                       .copyWith(
-                                          color: AppTheme.cuyutyuBlue,
-                                          fontWeight: FontWeight.bold)),
+                                      color: AppTheme.cuyutyuBlue,
+                                      fontWeight: FontWeight.w700)),
                               Text(widget.item['variation_id'],
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .subtitle2
+                                  style: AppTheme.title
                                       .copyWith(
                                           color: AppTheme.cuyutyuBlue,
-                                          fontWeight: FontWeight.bold)),
+                                          fontWeight: FontWeight.w700)),
                             ],
                           ),
                           Row(
@@ -142,27 +144,23 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                 flex: 1,
                                 child: Text(
                                   '\Kz ${double.parse(widget.item['old_price_product'])}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyText1
+                                  style: AppTheme.caption
                                       .copyWith(
-                                          fontFamily: 'Raleway',
+                                          fontFamily: 'Muli',
                                           decoration:
                                               TextDecoration.lineThrough,
                                           color: Color(0xFFF00000),
-                                          fontWeight: FontWeight.bold),
+                                          fontWeight: FontWeight.w700),
                                 ),
                               ),
                               Expanded(
                                 flex: 1,
                                 child: Text(
                                   '\Kz ${double.parse(widget.item['price_product'])}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyText1
+                                  style: AppTheme.caption
                                       .copyWith(
-                                        fontFamily: 'Raleway',
-                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Muli',
+                                        fontWeight: FontWeight.w700,
                                       ),
                                 ),
                               ),
@@ -176,7 +174,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                     },
                                     icon: Icon(
                                       Icons.add_shopping_cart,
-                                      color: cuyuyuDarkYellow,
+                                      color: AppTheme.cuyuyuDarkYellow,
                                     ),
                                   ),
                                 ),
@@ -200,19 +198,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               flex: 1,
                               child: IconButton(
                                   icon: Icon(Icons.remove_circle_outline),
-                                  color: cuyuyuOrange,
+                                  color: AppTheme.cuyuyuOrange,
                                   onPressed: () => decrementCount())),
                           Expanded(
                             flex: 1,
                             child: Text('$_defaultValue',
                                 textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.bodyText2),
+                                style: AppTheme.display1),
                           ),
                           Expanded(
                             flex: 1,
                             child: IconButton(
                               icon: Icon(Icons.add_circle_outline),
-                              color: cuyuyuOrange,
+                              color: AppTheme.cuyuyuOrange,
                               onPressed: () => incrementCount(),
                             ),
                           ),
@@ -221,8 +219,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             child: IconButton(
                               icon: !_isFavorited
                                   ? Icon(Icons.favorite_border,
-                                      color: cuyutyuBlue)
-                                  : Icon(Icons.favorite, color: cuyutyuBlue),
+                                      color: AppTheme.cuyutyuBlue)
+                                  : Icon(Icons.favorite, color: AppTheme.cuyutyuBlue),
                               onPressed: () {
                                 setState(() {
                                   _toggleFavorite();
@@ -237,60 +235,26 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     ),
                     Divider(),
                     Padding(
-                      padding: const EdgeInsets.only(
-                          left: 8.0, right: 8.0, top: 0.0, bottom: 8.0),
+                      padding: EdgeInsets.only(
+                          left: getProportionateScreenWidth(8.0), 
+                          right: getProportionateScreenWidth(8.0),
+                          top: getProportionateScreenHeight(0.0), 
+                          bottom: getProportionateScreenHeight(8.0)),
                       child: Text(
                         widget.item['description_product'],
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyText1
+                        style: AppTheme.display3
                             .copyWith(fontStyle: FontStyle.normal),
                         textAlign: TextAlign.justify,
                       ),
                     ),
-                    /*Container(
-                      margin: EdgeInsets.all(16.0),
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppTheme.nearlyBlue,
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(16.0),
-                        ),
-                        boxShadow: <BoxShadow>[
-                          BoxShadow(
-                              color: AppTheme.nearlyBlue.withOpacity(0.5),
-                              offset: const Offset(1.1, 1.1),
-                              blurRadius: 10.0),
-                        ],
-                      ),
-                      child: InkWell(
-                        onTap: () {
-                          share(context, widget.item);
-                          Toast.show("Adicionado ao carrinho", context,
-                              duration: Toast.LENGTH_LONG,
-                              gravity: Toast.BOTTOM);
-                        },
-                        child: Center(
-                          child: Text(
-                            'Compartilhar',
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 18,
-                              letterSpacing: 0.0,
-                              color: AppTheme.nearlyWhite,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),*/
+
                   ],
                 ),
               ),
             )
           ],
         ),
-      ),
+          bottomNavigationBar: CustomBottomNavBar(selectedMenu: MenuState.home)
     );
   }
 
@@ -407,59 +371,5 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         _isFavorited = true;
       });
     }
-  }
-
-  Widget getAppBarUI() {
-    return Container(
-      decoration: BoxDecoration(
-        color: ShopAppTheme.buildLightTheme().backgroundColor,
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-              color: Colors.grey.withOpacity(0.0),
-              offset: const Offset(0, 2),
-              blurRadius: 2.0),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top, left: 8, right: 8),
-        child: Row(
-          children: <Widget>[
-            Container(
-              alignment: Alignment.centerLeft,
-              width: AppBar().preferredSize.height + 40,
-              height: AppBar().preferredSize.height,
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(32.0),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Icon(Icons.arrow_back_ios),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: Text(
-                  widget.item['name_product'],
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Raleway',
-                  ),
-                  textAlign: TextAlign.left,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

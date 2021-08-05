@@ -1,16 +1,20 @@
+//@dart=2.9
 import 'dart:ui';
-import 'package:badges/badges.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cuyuyu/src/components/bottom_nav_bar.dart';
 import 'package:cuyuyu/src/components/horizontal_listview_category.dart';
 import 'package:cuyuyu/src/components/product_listview.dart';
 import 'package:cuyuyu/src/models/cart_model.dart';
 import 'package:cuyuyu/src/pages/product_detail_page.dart';
 import 'package:cuyuyu/src/utils/app_theme.dart';
-import 'package:cuyuyu/src/utils/calendar_popup_view.dart';
+import 'package:cuyuyu/src/utils/config.dart';
+import 'package:cuyuyu/src/utils/constants.dart';
 import 'package:cuyuyu/src/utils/databases/database_app.dart';
-import 'package:cuyuyu/src/utils/shop_app_theme.dart';
+import 'package:cuyuyu/src/utils/enums.dart';
+import 'package:cuyuyu/src/utils/icon_badge.dart';
+import 'package:cuyuyu/src/utils/size_config.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/route_manager.dart';
 
 import 'cart_page.dart';
 import 'filtere_screen.dart';
@@ -25,19 +29,12 @@ class ProdutHomePage extends StatefulWidget {
 
 class _ProdutHomePageState extends State<ProdutHomePage>
     with TickerProviderStateMixin {
-  AnimationController animationController;
-  List<CartModel> list = List();
+  List<CartModel> list = []..length;
   final dbHelper = DatabaseApp.instance;
-
-  final ScrollController _scrollController = ScrollController();
-
-  DateTime startDate = DateTime.now();
-  DateTime endDate = DateTime.now().add(const Duration(days: 5));
+  String produt = "";
 
   @override
   void initState() {
-    animationController = AnimationController(
-        duration: const Duration(milliseconds: 1000), vsync: this);
     setState(() {
       _getCarts();
     });
@@ -45,276 +42,197 @@ class _ProdutHomePageState extends State<ProdutHomePage>
   }
 
   @override
-  void dispose() {
-    animationController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Theme(
-      data: ShopAppTheme.buildLightTheme(),
-      child: Container(
-        child: Scaffold(
-          backgroundColor: AppTheme.nearlyWhite,
-          body: Stack(
-            children: <Widget>[
-              InkWell(
-                splashColor: Colors.transparent,
-                focusColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                hoverColor: Colors.transparent,
-                onTap: () {
-                  FocusScope.of(context).requestFocus(FocusNode());
-                },
-                child: Column(
-                  children: <Widget>[
-                    getAppBarUI(),
-                    Expanded(
-                      child: NestedScrollView(
-                        controller: _scrollController,
-                        headerSliverBuilder:
-                            (BuildContext context, bool innerBoxIsScrolled) {
-                          return <Widget>[
-                            SliverList(
-                              delegate: SliverChildBuilderDelegate(
-                                  (BuildContext context, int index) {
-                                return Column(
-                                  children: <Widget>[
-                                    //Caixinha de pesquisa
-                                    getSearchBarUI(),
-
-                                    //Lista das categorias
-                                    ProductHorizontalList(),
-                                  ],
-                                );
-                              }, childCount: 1),
-                            ),
-                            SliverPersistentHeader(
-                              pinned: true,
-                              floating: true,
-                              delegate: ContestTabHeader(
-                                getFilterBarUI(),
-                              ),
-                            ),
-                          ];
-                        },
-                        body: StreamBuilder(
-                          stream: loadAllProducts(widget.shopModel.id),
-                          builder:
-                              (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                            switch (snapshot.connectionState) {
-                              case ConnectionState.none:
-                                return Container(
-                                  child: Center(
-                                      child: new Text(
-                                          'Internet fraca. \nPor favar, verifique a sua conexão.')),
-                                );
-                              case ConnectionState.waiting:
-                                return Container(
-                                  child: Center(
-                                      child: new CircularProgressIndicator()),
-                                );
-                              default:
-                                if (snapshot.hasError) {
-                                  return Container(
-                                    child: Center(
-                                      child:
-                                          new Text('Erro : ${snapshot.error}'),
-                                    ),
-                                  );
-                                } else if (!snapshot.hasData) {
-                                  return Center(
-                                    child: Text('Sem dados'),
-                                  );
-                                } else {
-                                  return snapshot.data.docs.length > 0
-                                      ? Container(
-                                          color: ShopAppTheme.buildLightTheme()
-                                              .backgroundColor,
-                                          child: ListView.builder(
-                                            itemCount:
-                                                snapshot.data.docs.length,
-                                            padding:
-                                                const EdgeInsets.only(top: 8),
-                                            scrollDirection: Axis.vertical,
-                                            itemBuilder: (BuildContext context,
-                                                int index) {
-                                              final int count =
-                                                  snapshot.data.docs.length > 10
-                                                      ? 10
-                                                      : snapshot
-                                                          .data.docs.length;
-                                              final Animation<
-                                                  double> animation = Tween<
-                                                          double>(
-                                                      begin: 0.0, end: 1.0)
-                                                  .animate(CurvedAnimation(
-                                                      parent:
-                                                          animationController,
-                                                      curve: Interval(
-                                                          (1 / count) * index,
-                                                          1.0,
-                                                          curve: Curves
-                                                              .fastOutSlowIn)));
-                                              animationController.forward();
-                                              return ProductLisView(
-                                                callback: () {
-                                                  Navigator.of(context).push(
-                                                      MaterialPageRoute(
-                                                          builder: (context) =>
-                                                              ProductDetailPage(
-                                                                item: snapshot
-                                                                        .data
-                                                                        .docs[
-                                                                    index],
-                                                                shopName: widget
-                                                                        .shopModel[
-                                                                    'name_shopping'],
-                                                              )));
-                                                },
-                                                productData:
-                                                    snapshot.data.docs[index],
-                                                shopName: widget
-                                                    .shopModel['name_shopping'],
-                                                animation: animation,
-                                                animationController:
-                                                    animationController,
-                                              );
-                                            },
-                                          ),
-                                        )
-                                      : Center(
-                                          child: CircularProgressIndicator(),
-                                        );
-                                }
-                            }
-                          },
-                        ),
-                      ),
-                    )
-                  ],
-                ),
+    return Scaffold(
+      appBar: AppBar(
+        iconTheme: IconThemeData.fallback(),
+        centerTitle: true,
+        title: Text(
+          "${widget.shopModel['name_shopping']}",
+          style: AppTheme.title,
+        ),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: AppTheme.nearlyBlack,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: IconBadge(
+              icon: Icon(
+                Icons.shopping_cart_rounded,
+                color: AppTheme.nearlyBlack,
               ),
-            ],
+              itemCount: list.length,
+              badgeColor: Colors.red,
+              itemColor: Colors.white,
+              hideZero: true,
+              onTap: () {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: (context) => CartPage()));
+                setState(() {
+                  _getCarts();
+                });
+              },
+            ),
           ),
+        ],
+      ),
+      backgroundColor: AppTheme.nearlyWhite,
+      body: NestedScrollView(
+        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+          return <Widget>[
+            SliverList(
+              delegate:
+                  SliverChildBuilderDelegate((BuildContext context, int index) {
+                return Column(
+                  children: <Widget>[
+                    //Caixinha de pesquisa
+                    getSearchBarUI(),
+                    //Lista das categorias
+                    ProductHorizontalList(),
+                  ],
+                );
+              }, childCount: 1),
+            ),
+            SliverPersistentHeader(
+              pinned: true,
+              floating: true,
+              delegate: ContestTabHeader(
+                getFilterBarUI(),
+              ),
+            ),
+          ];
+        },
+        body: StreamBuilder(
+          stream: (produt.isNotEmpty && produt != null)
+              ? FirebaseFirestore.instance
+                  .collection(PRODUCT)
+                  .where(
+                    "id_shop",
+                    isEqualTo: widget.shopModel.id,
+                  )
+                  .where("name_product", arrayContains: produt)
+                  .snapshots()
+              : FirebaseFirestore.instance
+                  .collection(PRODUCT)
+                  .where("id_shop", isEqualTo: widget.shopModel.id)
+                  .snapshots(),
+          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+                return Container(
+                  child: Center(
+                      child: new Text(
+                          'Internet fraca. \nPor favar, verifique a sua conexão.')),
+                );
+              case ConnectionState.waiting:
+                return Container(
+                  child: Center(child: new CircularProgressIndicator()),
+                );
+              default:
+                if (snapshot.hasError) {
+                  return Container(
+                    child: Center(
+                      child: new Text('Erro : ${snapshot.error}'),
+                    ),
+                  );
+                } else if (!snapshot.hasData) {
+                  return Center(
+                    child: Text('Sem dados'),
+                  );
+                } else {
+                  return snapshot.data.docs.length > 0
+                      ? Container(
+                          color: AppTheme.nearlyWhite,
+                          child: ListView.builder(
+                            itemCount: snapshot.data.docs.length,
+                            padding: const EdgeInsets.only(top: 8),
+                            scrollDirection: Axis.vertical,
+                            itemBuilder: (BuildContext context, int index) {
+                              return ProductLisView(
+                                callback: () => Get.to(() => ProductDetailPage(
+                                      item: snapshot.data.docs[index],
+                                      shopName:
+                                          widget.shopModel['name_shopping'],
+                                    )),
+                                productData: snapshot.data.docs[index],
+                                shopName: widget.shopModel['name_shopping'],
+                              );
+                            },
+                          ),
+                        )
+                      : Center(
+                          child: CircularProgressIndicator(),
+                        );
+                }
+            }
+          },
         ),
       ),
+      bottomNavigationBar: CustomBottomNavBar(selectedMenu: MenuState.home),
     );
   }
 
   Widget getSearchBarUI() {
     return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 8),
-      child: Row(
-        children: <Widget>[
-          Expanded(
+        padding: EdgeInsets.only(
+            left: getProportionateScreenWidth(8),
+            right: getProportionateScreenWidth(8),
+            top: getProportionateScreenHeight(8),
+            bottom: getProportionateScreenHeight(8)),
+        child: Padding(
+          padding: EdgeInsets.only(
+              top: getProportionateScreenHeight(8),
+              bottom: getProportionateScreenHeight(8)),
+          child: Container(
             child: Padding(
-              padding: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: ShopAppTheme.buildLightTheme().backgroundColor,
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(38.0),
-                  ),
-                  boxShadow: <BoxShadow>[
-                    BoxShadow(
-                        color: Colors.grey.withOpacity(0.2),
-                        offset: const Offset(0, 2),
-                        blurRadius: 8.0),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                      left: 16, right: 16, top: 4, bottom: 4),
-                  child: TextField(
-                    onChanged: (String txt) {},
-                    style: const TextStyle(
-                      fontSize: 18,
-                    ),
-                    cursorColor: ShopAppTheme.buildLightTheme().primaryColor,
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: 'Pesquisar...',
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: ShopAppTheme.buildLightTheme().primaryColor,
-              borderRadius: const BorderRadius.all(
-                Radius.circular(38.0),
-              ),
-              boxShadow: <BoxShadow>[
-                BoxShadow(
-                    color: Colors.grey.withOpacity(0.4),
-                    offset: const Offset(0, 2),
-                    blurRadius: 8.0),
-              ],
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(32.0),
-                ),
-                onTap: () {
-                  FocusScope.of(context).requestFocus(FocusNode());
+              padding: EdgeInsets.only(
+                  top: getProportionateScreenHeight(4),
+                  bottom: getProportionateScreenHeight(4)),
+              child: TextField(
+                onChanged: (String txt) {
+                  setState(() {
+                    produt = txt;
+                  });
                 },
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Icon(FontAwesomeIcons.search,
-                      size: 20,
-                      color: ShopAppTheme.buildLightTheme().backgroundColor),
+                style: AppTheme.display1,
+                cursorColor: AppTheme.nearlyBlack,
+                cursorHeight: getProportionateScreenHeight(25),
+                decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(25.0),
+                    ),
+                  ),
+                  hintText: 'Pesquisar...',
                 ),
               ),
             ),
           ),
-        ],
-      ),
-    );
+        ));
   }
 
   Widget getFilterBarUI() {
     return Stack(
       children: <Widget>[
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: Container(
-            height: 24,
-            decoration: BoxDecoration(
-              color: ShopAppTheme.buildLightTheme().backgroundColor,
-              boxShadow: <BoxShadow>[
-                BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
-                    offset: const Offset(0, -2),
-                    blurRadius: 3.0),
-              ],
-            ),
-          ),
-        ),
         Container(
-          color: ShopAppTheme.buildLightTheme().backgroundColor,
+          color: AppTheme.nearlyWhite,
           child: Padding(
-            padding:
-                const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 4),
+            padding: EdgeInsets.only(
+                left: getProportionateScreenWidth(16),
+                right: getProportionateScreenWidth(16),
+                top: getProportionateScreenHeight(8),
+                bottom: getProportionateScreenHeight(4)),
             child: Row(
               children: <Widget>[
                 Expanded(
                   flex: 2,
                   child: Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: EdgeInsets.all(8.0),
                     child: Text(
                       'Produtos em destaques',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w100,
-                        fontSize: 16,
-                      ),
+                      style: AppTheme.display1,
                     ),
                   ),
                 ),
@@ -346,10 +264,7 @@ class _ProdutHomePageState extends State<ProdutHomePage>
                           children: <Widget>[
                             Text(
                               'Filtros',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w100,
-                                fontSize: 16,
-                              ),
+                              style: AppTheme.display1,
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
@@ -366,136 +281,8 @@ class _ProdutHomePageState extends State<ProdutHomePage>
             ),
           ),
         ),
-        const Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: Divider(
-            height: 1,
-          ),
-        )
       ],
     );
-  }
-
-  void showDemoDialog({BuildContext context}) {
-    showDialog<dynamic>(
-      context: context,
-      builder: (BuildContext context) => CalendarPopupView(
-        barrierDismissible: true,
-        minimumDate: DateTime.now(),
-        //  maximumDate: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day + 10),
-        initialEndDate: endDate,
-        initialStartDate: startDate,
-        onApplyClick: (DateTime startData, DateTime endData) {
-          setState(() {
-            if (startData != null && endData != null) {
-              startDate = startData;
-              endDate = endData;
-            }
-          });
-        },
-        onCancelClick: () {},
-      ),
-    );
-  }
-
-  Widget getAppBarUI() {
-    return Container(
-      decoration: BoxDecoration(
-        color: ShopAppTheme.buildLightTheme().backgroundColor,
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              offset: const Offset(0, 2),
-              blurRadius: 8.0),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top, left: 4, right: 4),
-        child: Row(
-          children: <Widget>[
-            Container(
-              alignment: Alignment.centerLeft,
-              width: AppBar().preferredSize.height + 40,
-              height: AppBar().preferredSize.height,
-              child: Material(
-                color: Colors.white,
-                child: InkWell(
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(32.0),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Icon(Icons.arrow_back_ios),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Text(
-                '${widget.shopModel['name_shopping']}',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Raleway',
-                ),
-                textAlign: TextAlign.left,
-              ),
-            ),
-            Container(
-              width: AppBar().preferredSize.height + 40,
-              height: AppBar().preferredSize.height,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
-                  Material(
-                    color: Colors.transparent,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: IconButton(
-                        icon: Badge(
-                          badgeContent: Text(
-                            '${list.length}',
-                            style:
-                                Theme.of(context).textTheme.bodyText2.copyWith(
-                                      color: AppTheme.nearlyWhite,
-                                      fontFamily: 'Raleway',
-                                    ),
-                          ),
-                          child: Icon(
-                            Icons.shopping_cart,
-                            color: AppTheme.nearlyBlack,
-                          ),
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _getCarts();
-                          });
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => CartPage()));
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  Stream<QuerySnapshot> loadAllProducts(model) {
-    return FirebaseFirestore.instance
-        .collection('Product')
-        .where("id_shop", isEqualTo: model)
-        .snapshots();
   }
 
   void _getCarts() async {
@@ -503,29 +290,5 @@ class _ProdutHomePageState extends State<ProdutHomePage>
     list.clear();
     allRows.forEach((row) => list.add(CartModel.fromMap(row)));
     setState(() {});
-  }
-}
-
-class ContestTabHeader extends SliverPersistentHeaderDelegate {
-  ContestTabHeader(
-    this.searchUI,
-  );
-  final Widget searchUI;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return searchUI;
-  }
-
-  @override
-  double get maxExtent => 52.0;
-
-  @override
-  double get minExtent => 52.0;
-
-  @override
-  bool shouldRebuild(SliverPersistentHeaderDelegate oldDelegate) {
-    return false;
   }
 }

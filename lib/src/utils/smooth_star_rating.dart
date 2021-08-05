@@ -1,3 +1,4 @@
+//@dart=2.9
 library smooth_star_rating;
 
 import 'dart:async';
