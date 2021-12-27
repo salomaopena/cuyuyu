@@ -52,5 +52,29 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+
+	<key>CFBundleURLTypes</key>
+    <array>
+    	<dict>
+    		<key>CFBundleTypeRole</key>
+    		<string>Editor</string>
+    		<key>CFBundleURLSchemes</key>
+    		<array>
+    			<string>com.googleusercontent.apps.338616240173-fn13o2f77sfoqiie48qqfqstpdb24htq</string>
+    		</array>
+    	</dict>
+    </array>
+
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>This app needs access to location when open.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>This app needs access to location when in the background.</string>
+
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app needs access permission for the photo library.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Need to access your camera to capture a photo add and update profile picture.</string>
+
+
 </dict>
 </plist>

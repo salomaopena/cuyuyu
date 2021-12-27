@@ -1,106 +1,67 @@
 //@dart=2.9
 import 'package:carousel_pro/carousel_pro.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cuyuyu/src/utils/app_theme.dart';
-import 'package:cuyuyu/src/utils/constants.dart';
-import 'package:cuyuyu/src/utils/size_config.dart';
+import 'package:cuyuyu/src/common/app_colors.dart';
+import 'package:cuyuyu/src/models/banners/banner_manager.dart';
+import 'package:cuyuyu/src/pages/home/view_banner_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:get/get.dart';
+import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class HomeBanner extends StatelessWidget {
   const HomeBanner({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    int index = 0;
     return Container(
-      margin: EdgeInsets.only(
-        top: 4.0,
-        bottom: 8.0,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      height: MediaQuery.of(context).size.height * 0.23,
+      child: Consumer<BannerManager>(
+        builder: (_, bannerManager, __) {
+          final items = bannerManager.allItems;
+          if (items.isEmpty) {
+            return const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation(AppColors.closeColor),
+              backgroundColor: Colors.transparent,
+            );
+          }
+          return Carousel(
+            boxFit: BoxFit.cover,
+            dotSize: 4,
+            radius: const Radius.circular(5),
+            indicatorBgPadding: 4,
+            dotSpacing: 15,
+            dotBgColor: Colors.transparent,
+            dotColor: AppColors.closeColor,
+            autoplay: true,
+            animationCurve: Curves.slowMiddle,
+            animationDuration: const Duration(milliseconds: 3000),
+            onImageTap: (i) {
+              final banner = items[i];
+              if (banner != null) {
+                Get.to(() => ViewBannerScreen(banner: banner));
+              }
+            },
+            images: items.map((item) {
+              return ClipRRect(
+                borderRadius: const BorderRadius.all(Radius.circular(5.0)),
+                child: CachedNetworkImage(
+                  imageUrl: item.imageUrl,
+                  fit: BoxFit.cover,
+                  width: double.maxFinite,
+                  progressIndicatorBuilder: (_, __, downloadProgress) => Center(
+                      child:  CircularProgressIndicator(
+                    value: downloadProgress.progress,
+                    valueColor: const AlwaysStoppedAnimation(Colors.deepOrange),
+                  )),
+                  errorWidget: (context, url, error) => Icon(Icons.error),
+                ),
+              );
+            }).toList(),
+          );
+        },
       ),
-      padding: EdgeInsets.only(left: 8.0, right: 8.0),
-      height: getProportionateScreenHeight(160),
-      width: double.infinity,
-      child: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance.collection(BANNER_URL).snapshots(),
-          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-            List<NetworkImage> list = []..length;
-            switch (snapshot.connectionState) {
-              case ConnectionState.none:
-                return Container(
-                  child: Center(
-                      child: new Text(
-                          'Internet fraca. \nPor favar, verifique a sua conexão.')),
-                );
-                break;
-              case ConnectionState.waiting:
-                return Container(
-                  child: Center(child: new CircularProgressIndicator()),
-                );
-                break;
-              default:
-                if (snapshot.hasError) {
-                  return Container(
-                    child: Center(
-                      child: Text(snapshot.error.toString()),
-                    ),
-                  );
-                } else if (snapshot.hasData) {
-                  for (int i = 0; i < snapshot.data.size; i++) {
-                    list.add(NetworkImage(
-                        snapshot.data.docs[i].data()['image_url']));
-                    index = i;
-                  }
-                  return GestureDetector(
-                    onTap: () {
-                      print("Clicado");
-                    },
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.all(Radius.circular(16.0)),
-                      child: Banner(
-                        message: "Publicite aqui",
-                        location: BannerLocation.topEnd,
-                        color: Colors.red,
-                        child: Stack(
-                          children: [
-                            Carousel(
-                              boxFit: BoxFit.cover,
-                              images: list,
-                              autoplay: true,
-                              radius: Radius.circular(20),
-                              borderRadius: true,
-                              dotSpacing: 20,
-                              animationCurve: Curves
-                                  .fastLinearToSlowEaseIn, //Curves.fastLinearToSlowEaseIn,
-                              animationDuration: Duration(milliseconds: 5000),
-                              dotSize: 2.0,
-                              dotColor: AppTheme.cuyuyuOrange400,
-                              dotBgColor: AppTheme.cuyuyuTransparent,
-                              indicatorBgPadding: 2.0,
-                              overlayShadow: true,
-                              overlayShadowColors: AppTheme.cuyuyuOrange100,
-                              overlayShadowSize: 0.4,
-                            ),
-                            Padding(
-                              padding: EdgeInsets.all(getProportionateScreenHeight(10)),
-                              child: Text(snapshot.data.docs[index].data()['offer'],
-                                style: AppTheme.title.copyWith(
-                                  fontFamily: 'Muli',
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.red
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                }
-            }
-            return Container();
-          }),
     );
   }
 }
